@@ -1,0 +1,61 @@
+version: 2
+
+models:
+  - name: export_train_services_agg
+    description: ""
+    columns:
+      - name: service_type
+        data_type: varchar
+        description: "The service type"
+
+      - name: service_company
+        data_type: varchar
+        description: "The service company"
+
+      - name: station_sk
+        data_type: varchar
+        description: "The station surrogate key"
+
+      - name: station_name
+        data_type: varchar
+        description: "The station name"
+
+      - name: station_geo_location
+        data_type: geometry
+        description: "The station geo location"
+
+      - name: municipality_sk
+        data_type: varchar
+        description: "The municipality surrogate key"
+
+      - name: municipality_name
+        data_type: varchar
+        description: "The municipality name"
+
+      - name: municipality_geometry
+        data_type: varchar
+        description: "The municipality geometry"
+
+      - name: province_sk
+        data_type: varchar
+        description: "The province surrogate key"
+
+      - name: province_name
+        data_type: varchar
+        description: "The province name"
+
+      - name: province_geometry
+        data_type: varchar
+        description: ""
+
+      - name: number_of_rides
+        data_type: double
+        description: "The number of rides on the service date"
+
+      - name: service_month
+        data_type: bigint
+        description: ""
+
+      - name: service_year
+        data_type: bigint
+        description: ""

@@ -1,0 +1,131 @@
+
+version: 2
+
+models:
+  - name: rep_dim_nl_provinces
+    description: "Dim table for NL provinces"
+    columns:
+      - name: province_sk
+        data_type: varchar
+        description: "The surrogate key"
+      - name: province_id
+        data_type: integer
+        description: "The primary key in the source system"
+      - name: province_name
+        data_type: varchar
+        description: "The province name"
+      - name: province_geom
+        data_type: geometry
+        description: "The province geometry"
+      - name: last_updated_at
+        data_type: timestamp
+        description: "Timestamp when the record was last updated"
+      - name: invocation_id
+        data_type: varchar
+        description: "The dbt invocation id"
+
+  - name: rep_dim_nl_municipalities
+    description: "Dim table for NL municipalities"
+    columns:
+      - name: municipality_sk
+        data_type: varchar
+        description: "The surrogate key"
+      - name: municipality_id
+        data_type: integer
+        description: "The primary key in the source data"
+      - name: province_sk
+        data_type: varchar
+        description: "The province in which the municipality is located"
+        tests:
+          - relationships:
+              to: ref('rep_dim_nl_provinces')
+              field: province_sk
+      - name: municipality_name
+        data_type: varchar
+        description: "The municipality name"
+      - name: municipality_geometry
+        data_type: geometry
+        description: "The municipality geometry"
+      - name: last_updated_at
+        data_type: timestamp
+        description: "Timestamp when the record was last updated"
+      - name: invocation_id
+        data_type: varchar
+        description: "The dbt invocation id"
+
+  - name: rep_dim_nl_train_stations
+    description: "Dim table for NL train stations"
+    columns:
+      - name: station_sk
+        data_type: varchar
+        description: "The surrogate key"
+      - name: station_id
+        data_type: varchar
+        description: "The primary key of this table in the source data"
+      - name: municipality_sk
+        data_type: varchar
+        description: "The municipality in which the station is located"
+        tests:
+          - relationships:
+              to: ref('rep_dim_nl_municipalities')
+              field: municipality_sk
+      - name: station_code
+        data_type: varchar
+        description: "The code of the station"
+      - name: station_name
+        data_type: varchar
+        description: "The station name"
+      - name: station_type
+        data_type: varchar
+        description: "The station type"
+      - name: station_geo_location
+        data_type: geometry
+        description: "The station geo location"
+      - name: last_updated_at
+        data_type: timestamp
+        description: "Timestamp when the record was last updated"
+      - name: invocation_id
+        data_type: varchar
+        description: "The dbt invocation id"
+
+  - name: rep_fact_train_services_daily_agg
+    columns:
+      - name: service_date
+        data_type: date
+        description: "The service date"
+      - name: service_type
+        data_type: varchar
+        description: "The service type"
+      - name: service_company
+        data_type: varchar
+        description: "The service company"
+      - name: station_sk
+        data_type: varchar
+        description: "The station sk"
+        tests:
+          - relationships:
+              to: ref('rep_dim_nl_train_stations')
+              field: station_sk
+      - name: municipality_sk
+        data_type: varchar
+        description: "The municipality sk"
+        tests:
+          - relationships:
+              to: ref('rep_dim_nl_municipalities')
+              field: municipality_sk
+      - name: province_sk
+        data_type: varchar
+        description: "The province sk"
+        tests:
+          - relationships:
+              to: ref('rep_dim_nl_provinces')
+              field: province_sk
+      - name: number_of_rides
+        data_type: integer
+        description: "The number of rides on the service date"
+      - name: last_updated_at
+        data_type: timestamp
+        description: "Timestamp when the record was last updated"
+      - name: invocation_id
+        data_type: varchar
+        description: "The dbt invocation id"

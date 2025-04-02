@@ -1,0 +1,16 @@
+version: 2
+sources:
+  - name: geojson_external
+    tables:
+      - name: nl_provinces
+        config:
+          external_location: "https://cartomap.github.io/nl/wgs84/provincie_2025.geojson"
+      - name: nl_municipalities
+        config:
+          external_location: "seeds/gemeente_2025.geojson"
+  - name: external_db
+    database: external_db
+    schema: main
+    tables:
+      - name: stations
+      - name: services
