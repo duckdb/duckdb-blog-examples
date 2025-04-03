@@ -6,8 +6,8 @@
 }}
 
 SELECT
-  YEAR(service_date)  AS service_year,
-  MONTH(service_date) AS service_month,
+  year(service_date)  AS service_year,
+  month(service_date) AS service_month,
   service_type,
   service_company,
   tr_st.station_sk,
@@ -16,7 +16,7 @@ SELECT
   m.municipality_name,
   p.province_sk,
   p.province_name,
-  COUNT(*)            AS number_of_rides
+  count(*)            AS number_of_rides
 FROM {{ ref ("fact_services") }} AS srv
 INNER JOIN {{ ref("dim_nl_train_stations") }} AS tr_st
   ON srv.station_sk = tr_st.station_sk

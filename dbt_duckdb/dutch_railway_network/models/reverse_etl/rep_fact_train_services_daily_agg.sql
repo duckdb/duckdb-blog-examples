@@ -13,7 +13,7 @@ SELECT
   srv.station_sk,
   mn.municipality_sk,
   province_sk,
-  COUNT(*) AS number_of_rides,
+  count(*) AS number_of_rides,
   {{ common_columns() }}
 FROM {{ ref ("fact_services") }} AS srv
 INNER JOIN {{ ref("rep_dim_nl_train_stations") }} AS tr_st

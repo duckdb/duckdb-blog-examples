@@ -47,7 +47,7 @@ extended_capitalisation_policy = lower
 unquoted_identifiers_policy = all
 
 [sqlfluff:rules:capitalisation.functions]
-extended_capitalisation_policy = upper
+extended_capitalisation_policy = lower
 
 [sqlfluff:rules:capitalisation.literals]
 capitalisation_policy = upper

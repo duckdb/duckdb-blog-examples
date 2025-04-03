@@ -6,9 +6,9 @@ WITH covered_by_selection AS (
     statnaam AS municipality_name,
     geom     AS municipality_geometry,
     dim_prov.province_sk
-  FROM ST_READ({{ source("geojson_external", "nl_municipalities") }}) AS dim_mun
+  FROM st_read({{ source("geojson_external", "nl_municipalities") }}) AS dim_mun
   INNER JOIN {{ ref ("dim_nl_provinces") }} AS dim_prov
-    ON ST_COVERS(dim_prov.province_geometry, dim_mun.geom)
+    ON st_covers(dim_prov.province_geometry, dim_mun.geom)
 ),
 ordered_by_difference_area AS (
   SELECT
@@ -16,15 +16,15 @@ ordered_by_difference_area AS (
     statnaam AS municipality_name,
     geom     AS municipality_geometry,
     dim_prov.province_sk
-  FROM ST_READ({{ source("geojson_external", "nl_municipalities") }}) AS dim_mun,
+  FROM st_read({{ source("geojson_external", "nl_municipalities") }}) AS dim_mun,
     {{ ref ("dim_nl_provinces") }} AS dim_prov
   WHERE NOT EXISTS (
       SELECT 1 FROM covered_by_selection
       WHERE dim_mun.id = covered_by_selection.municipality_id
     )
-  QUALIFY ROW_NUMBER() OVER (
+  QUALIFY row_number() OVER (
       PARTITION BY municipality_id
-      ORDER BY ST_AREA(ST_DIFFERENCE(dim_mun.geom, province_geometry))
+      ORDER BY st_area(st_difference(dim_mun.geom, province_geometry))
     ) = 1
 )
 SELECT

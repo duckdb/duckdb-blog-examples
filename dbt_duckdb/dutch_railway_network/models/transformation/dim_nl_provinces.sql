@@ -6,7 +6,7 @@ SELECT
   statnaam                         AS province_name,
   geom                             AS province_geometry,
   {{ common_columns() }}
-FROM ST_READ({{ source("geojson_external", "nl_provinces") }}) AS src
+FROM st_read({{ source("geojson_external", "nl_provinces") }}) AS src
 UNION ALL
 SELECT
   'unknown' AS province_sk,
