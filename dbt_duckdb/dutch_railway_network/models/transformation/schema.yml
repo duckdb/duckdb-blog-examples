@@ -1,0 +1,111 @@
+
+version: 2
+
+models:
+  - name: dim_nl_provinces
+    description: "Dim table for NL provinces, example of SCD2"
+    columns:
+      - name: province_sk
+        description: "The surrogate key"
+      - name: province_id
+        description: "The primary key in the source system"
+        tests:
+          - unique
+          - not_null
+      - name: province_name
+        description: "The province name"
+      - name: province_geom
+        description: "The province geometry"
+      - name: last_updated_dt
+        description: "Timestamp when the record was last updated"
+      - name: invocation_id
+        description: "The dbt invocation id"
+
+  - name: dim_nl_municipalities
+    description: "Dim table for NL municipalities"
+    columns:
+      - name: municipality_sk
+        description: "The surrogate key"
+      - name: municipality_id
+        description: "The primary key in the source data"
+        tests:
+          - unique
+          - not_null
+      - name: province_sk
+        description: "The province in which the municipality is located"
+        tests:
+          - relationships:
+              to: ref('dim_nl_provinces')
+              field: province_sk
+      - name: municipality_name
+        description: "The municipality name"
+      - name: municipality_geometry
+        description: "The municipality geometry"
+      - name: last_updated_dt
+        description: "Timestamp when the record was last updated"
+      - name: invocation_id
+        description: "The dbt invocation id"
+
+  - name: dim_nl_train_stations
+    description: "Dim table for NL train stations"
+    columns:
+      - name: station_sk
+        description: "The surrogate key"
+      - name: station_id
+        description: "The primary key of this table in the source data"
+        tests:
+          - unique
+          - not_null
+      - name: municipality_sk
+        description: "The municipality id in which the station is located"
+        tests:
+          - relationships:
+              to: ref('dim_nl_municipalities')
+              field: municipality_sk
+      - name: station_code
+        description: "The code of the station"
+        tests:
+          - unique
+          - not_null
+      - name: station_name
+        description: "The station name"
+      - name: station_type
+        description: "The station type"
+      - name: station_geo_location
+        description: "The station geo location"
+      - name: last_updated_dt
+        description: "Timestamp when the record was last updated"
+      - name: invocation_id
+        description: "The dbt invocation id"
+
+  - name: fact_services
+    columns:
+      - name: service_sk
+        description: "The surrogate key"
+        tests:
+          - unique
+          - not_null
+      - name: service_date
+        description: "The service date"
+      - name: service_type
+        description: "The service type"
+      - name: service_company
+        description: "The service company"
+      - name: service_date
+        description: "The service date"
+      - name: station_sk
+        description: "The station surrogate key"
+        tests:
+          - relationships:
+              to: ref('dim_nl_train_stations')
+              field: station_sk
+      - name: station_arrival_time
+        description: "The arrival time in the station"
+      - name: station_departure_time
+        description: "The departure time from the station"
+      - name: service_arrival_cancelled
+        description: "Flag if the arrival was cancelled in the station"
+      - name: last_updated_dt
+        description: "Timestamp when the record was last updated"
+      - name: invocation_id
+        description: "The dbt invocation id"

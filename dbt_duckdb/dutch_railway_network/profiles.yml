@@ -1,0 +1,19 @@
+dutch_railway_network:
+
+  outputs:
+    dev:
+      type: duckdb
+      path: data/dutch_railway_network.duckdb
+      extensions:
+        - spatial
+        - httpfs
+        - postgres
+      threads: 5
+      attach:
+        - path: 'https://blobs.duckdb.org/nl-railway/train_stations_and_services.duckdb'
+          type: duckdb
+          alias: external_db
+        - path: "postgresql://postgres:{{ env_var('DBT_DUCKDB_PG_PWD') }}@localhost:5466/postgres"
+          type: postgres
+          alias: postgres_db
+  target: dev

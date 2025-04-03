@@ -1,0 +1,10 @@
+
+dutch_railway_network/target/
+dutch_railway_network/dbt_packages/
+dutch_railway_network/logs/
+dutch_railway_network/data/dutch_railway_network.duckdb
+venv_dbt_duckdb/
+dutch_railway_network/.user.yml
+dutch_railway_network/data/exports/nl_train_services_aggregate/service_year=2024/
+dutch_railway_network/data/exports/*.json
+dutch_railway_network/analyses/*.html

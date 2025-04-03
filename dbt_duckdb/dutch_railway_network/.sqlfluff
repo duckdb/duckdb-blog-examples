@@ -1,0 +1,80 @@
+[sqlfluff]
+templater = jinja
+dialect = duckdb
+exclude_rules = AL04, AL05, AL06, AL07, AM01, AM02, AM03, AM04, AM07, CV01,
+                CV02, CV03, CV04, CV05, CV06, CV07, CV08, CV09, CV10, CV11,
+                LT03, LT05, LT07, LT08, LT12, LT13, RF01, RF02, RF03, RF04,
+                RF05, RF06, ST01, ST02, ST03, ST06, ST07, ST08, TQ01, CP05
+ignore = templating
+large_file_skip_byte_limit = 0
+max_line_length = 0
+
+
+[sqlfluff:layout:type:alias_expression]
+spacing_before = align
+align_within = select_clause
+spacing_after = touch
+
+[sqlfluff:indentation]
+tab_space_size = 2
+indent_unit = space
+indented_joins = false
+indented_using_on = true
+allow_implicit_indents = true
+indented_on_contents = false
+indented_ctes = false
+
+[sqlfluff:rules:aliasing.table]
+aliasing.table = explicit
+
+[sqlfluff:rules:aliasing.column]
+aliasing.column = explicit
+
+[sqlfluff:rules:aliasing.expression]
+allow_scalar = True
+
+[sqlfluff:rules:ambiguous.join]
+fully_qualify_join_types = inner
+
+[sqlfluff:rules:ambiguous.column_references]
+group_by_and_order_by_style = consistent
+
+[sqlfluff:rules:capitalisation.keywords]
+capitalisation_policy = upper
+
+[sqlfluff:rules:capitalisation.identifiers]
+extended_capitalisation_policy = lower
+unquoted_identifiers_policy = all
+
+[sqlfluff:rules:capitalisation.functions]
+extended_capitalisation_policy = upper
+
+[sqlfluff:rules:capitalisation.literals]
+capitalisation_policy = upper
+
+[sqlfluff:rules:capitalisation.types]
+extended_capitalisation_policy = upper
+
+[sqlfluff:rules:jinja.padding]
+single_space = true
+
+[sqlfluff:rules:layout.spacing]
+no_trailing_whitespace = true
+extra_whitespace = false
+
+[sqlfluff:rules:layout.commas]
+line_position = trailing
+
+[sqlfluff:rules:layout.functions]
+no_space_after_function_name = true
+
+[sqlfluff:rules:layout.select_targets]
+wildcard_policy = single
+
+[sqlfluff:rules:layout.set_operators]
+set_operator_on_new_line = ['UNION', 'UNION ALL']
+
+[sqlfluff:rules:structure.nested_case]
+
+[sqlfluff:rules:structure.subquery]
+forbid_subquery_in = join
