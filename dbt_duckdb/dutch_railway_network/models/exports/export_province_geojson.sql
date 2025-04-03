@@ -6,11 +6,11 @@
 
 WITH province_agg AS (
   SELECT
-    JSON_GROUP_ARRAY(
-      JSON_OBJECT(
+    json_group_array(
+      json_object(
         'type', 'Feature',
-        'properties', JSON_OBJECT('province_sk', province_sk),
-        'geometry', ST_ASGEOJSON(province_geometry)
+        'properties', json_object('province_sk', province_sk),
+        'geometry', st_asgeojson(province_geometry)
       )
     ) AS features
   FROM {{ ref("dim_nl_provinces") }}
