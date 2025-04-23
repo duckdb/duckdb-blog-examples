@@ -1,6 +1,6 @@
 SELECT COUNT(*)
 FROM {{ source("external_db", "services") }}
-WHERE "Stop:Arrival cancelled" IS FALSE
+WHERE IF("Stop:Arrival cancelled" is null, false, "Stop:Arrival cancelled") IS FALSE
   AND "Stop:Station Code" IN (
     SELECT code
     FROM {{ source("external_db", "stations") }}

@@ -22,7 +22,10 @@ serve-chart:
 	source venv_dbt_duckdb/bin/activate && \
 	cd dutch_railway_network && \
 	python analyses/build_charts.py && \
-	echo 'go to http://localhost:8888/charts.html' && \
+	python analyses/time_based_functions/tumbling_window.py && \
+	python analyses/time_based_functions/sliding_window.py  && \
+	python analyses/time_based_functions/session_window.py && \
+	echo 'go to http://localhost:8888' && \
 	python -m http.server 8888 -d analyses
 
 
