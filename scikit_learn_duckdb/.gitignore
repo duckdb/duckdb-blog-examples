@@ -1,0 +1,5 @@
+venv_scikit_learn_duckdb/
+.tmp/
+model/*.dot
+model/*.sav
+__marimo__/
