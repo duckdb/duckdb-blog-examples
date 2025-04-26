@@ -1,4 +1,15 @@
-{{ config(materialized='table') }}
+{{ config(
+    materialized='table',
+    post_hook = """
+    call postgres_execute(
+        '{{ this.database }}',
+        '
+            alter table {{ this.schema }}.rep_dim_nl_train_stations
+            alter column station_geo_location type geometry
+            using  ST_GeomFromWKB(decode(station_geo_location, ''hex''))
+        '
+    )
+    """) }}
 
 SELECT
   station_sk,

@@ -44,5 +44,7 @@ SELECT
   -1        AS municipality_id,
   'unknown' AS municipality_name,
   NULL      AS municipality_geometry,
-  'unknown' province_sk,
+  'unknown' AS province_sk,
   {{ common_columns() }}
+
+select municipality_name, province_name from main_main.dim_nl_municipalities join main_main.dim_nl_provinces on st_covers(province_geometry, municipality_geometry)
