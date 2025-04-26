@@ -7,7 +7,7 @@ SELECT
   tr_st.name_long                              AS station_name,
   tr_st.type                                   AS station_type,
   st_point(tr_st.geo_lng, tr_st.geo_lat)       AS station_geo_location,
-  coalesce(dim_mun.municipality_sk, 'unknown') municipality_sk,
+  coalesce(dim_mun.municipality_sk, 'unknown') AS municipality_sk,
   {{ common_columns() }}
 FROM {{ source("external_db", "stations") }} AS tr_st
 LEFT JOIN {{ ref ("dim_nl_municipalities") }} AS dim_mun
