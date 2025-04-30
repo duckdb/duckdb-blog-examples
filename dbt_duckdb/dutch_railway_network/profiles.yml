@@ -8,7 +8,7 @@ dutch_railway_network:
         - spatial
         - httpfs
         - postgres
-      threads: 5
+      threads: 1
       attach:
         - path: 'https://blobs.duckdb.org/nl-railway/train_stations_and_services.duckdb'
           type: duckdb

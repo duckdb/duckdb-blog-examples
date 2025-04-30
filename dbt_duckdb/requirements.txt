@@ -2,6 +2,7 @@ agate==1.9.1
 annotated-types==0.7.0
 attrs==25.3.0
 babel==2.17.0
+black==25.1.0
 certifi==2025.1.31
 chardet==5.2.0
 charset-normalizer==3.4.1
@@ -19,6 +20,7 @@ dbterd==1.18.0
 deepdiff==7.0.1
 diff_cover==9.2.4
 duckdb==1.2.1
+funcy==2.0
 idna==3.10
 importlib-metadata==6.11.0
 iniconfig==2.1.0
@@ -31,6 +33,7 @@ MarkupSafe==3.0.2
 mashumaro==3.14
 more-itertools==10.6.0
 msgpack==1.1.0
+mypy-extensions==1.0.0
 narwhals==1.32.0
 networkx==3.4.2
 numpy==2.2.4

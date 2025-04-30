@@ -16,7 +16,7 @@ align_within = select_clause
 spacing_after = touch
 
 [sqlfluff:indentation]
-tab_space_size = 2
+tab_space_size = 4
 indent_unit = space
 indented_joins = false
 indented_using_on = true

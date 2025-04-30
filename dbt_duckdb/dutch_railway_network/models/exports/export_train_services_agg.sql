@@ -6,23 +6,23 @@
 }}
 
 SELECT
-  year(service_date)  AS service_year,
-  month(service_date) AS service_month,
-  service_type,
-  service_company,
-  tr_st.station_sk,
-  tr_st.station_name,
-  m.municipality_sk,
-  m.municipality_name,
-  p.province_sk,
-  p.province_name,
-  count(*)            AS number_of_rides
+    year(service_date)  AS service_year,
+    month(service_date) AS service_month,
+    service_type,
+    service_company,
+    tr_st.station_sk,
+    tr_st.station_name,
+    m.municipality_sk,
+    m.municipality_name,
+    p.province_sk,
+    p.province_name,
+    count(*)            AS number_of_rides
 FROM {{ ref ("fact_services") }} AS srv
 INNER JOIN {{ ref("dim_nl_train_stations") }} AS tr_st
-  ON srv.station_sk = tr_st.station_sk
+    ON srv.station_sk = tr_st.station_sk
 INNER JOIN {{ ref("dim_nl_municipalities") }} AS m
-  ON tr_st.municipality_sk = m.municipality_sk
+    ON tr_st.municipality_sk = m.municipality_sk
 INNER JOIN {{ ref("dim_nl_provinces") }} AS p
-  ON m.province_sk = p.province_sk
+    ON m.province_sk = p.province_sk
 WHERE service_year = {{ var('execution_year') }}
 GROUP BY ALL
