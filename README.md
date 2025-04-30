@@ -1,6 +1,7 @@
 # duckdb-blog-examples
 
 In this repository we store the code we show-case in blog posts.
+This code is intended for learning purposes, and might not be maintained nor updated with new releases of the libraries used.
 
 # duckdb_streamlit
 
