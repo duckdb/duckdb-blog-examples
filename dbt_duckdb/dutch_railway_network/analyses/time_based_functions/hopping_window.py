@@ -22,10 +22,10 @@ def get_hopping_window(duckdb_conn):
     SELECT
         window_start,
         window_end,
-        count(*) AS number_of_services
+        count(service_sk) AS number_of_services
     FROM ams_traffic_v
     INNER JOIN time_range AS ts
-        ON station_service_time BETWEEN ts.window_start AND ts.window_end
+        ON station_service_time >= ts.window_start AND station_service_time < ts.window_end
     GROUP BY ALL
     ORDER BY 3 DESC, 1 ASC
     LIMIT 5
