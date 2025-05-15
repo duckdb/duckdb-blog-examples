@@ -39,10 +39,10 @@ def _():
 
 @app.cell
 def _(duckdb):
-    # read the csv data from github, exclude records with null values and alter column type
+    # read the csv data from external location and exclude records with null values and alter column type
     def process_palmerpenguins_data(duckdb_conn):
         duckdb_conn.read_csv(
-            "https://raw.githubusercontent.com/allisonhorst/palmerpenguins/master/inst/extdata/penguins.csv"
+            "http://blobs.duckdb.org/data/penguins.csv"
         ).filter("columns(*)::text != 'NA'").filter("columns(*) is not null").select(
             "*, row_number() over () as observation_id"
         ).to_table(
@@ -124,7 +124,7 @@ def _(duckdb_conn):
                 .row_number(
                     window_spec=f"over (order by {feature})", projected_columns=feature
                 )
-                .select(f"{feature}, #2 as {feature}_id")
+                .select(f"{feature}, #2 - 1 as {feature}_id")
                 .to_table(f"{feature}_ref")
             )
             duckdb_conn.table(f"{feature}_ref").show()
