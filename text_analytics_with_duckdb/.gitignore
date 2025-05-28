@@ -1,5 +1,5 @@
 venv_text_analytics_with_duckdb/
 .env
-data/*.duckdb
+data/*.duckdb*
 sentence_transformer/
 __marimo__

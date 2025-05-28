@@ -1,4 +1,4 @@
-.PHONY: setup-python, run-marimo
+.PHONY: setup-python run-marimo
 
 setup-python:
 	python -m venv venv_text_analytics_with_duckdb && \

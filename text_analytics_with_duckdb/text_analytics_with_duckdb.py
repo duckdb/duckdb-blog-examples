@@ -95,24 +95,20 @@ def _(conn):
 
 @app.cell
 def _(conn):
-    def create_view(duckdb_conn):
-        text_emotions_rel = duckdb_conn.table("text_emotions")
-        emotion_ref_rel = duckdb_conn.table("emotion_ref")
-        text_emotions_rel.join(emotion_ref_rel, condition="emotion_id").to_view(
-            "text_emotions_v", replace=True
-        )
+    text_emotions_rel = conn.table("text_emotions").join(
+        conn.table("emotion_ref"), condition="emotion_id")
 
-    create_view(conn)
-    return
+    text_emotions_rel.to_view("text_emotions_v", replace=True)
+    return (text_emotions_rel,)
 
 
 @app.cell
-def _(conn, emotion_colors):
+def _(emotion_colors, text_emotions_rel):
     import plotly.express as px
 
     px.bar(
         (
-            conn.view("text_emotions_v")
+            text_emotions_rel
             .count(
                 column="text",
                 groups="emotion",
@@ -141,26 +137,24 @@ def _(mo):
 
 
 @app.cell
-def _(conn):
-    view_rel = conn.view("text_emotions_v")
-    view_rel = view_rel.filter("text ilike '%excited to learn%'")
-    view_rel.select("""
+def _(text_emotions_rel):
+    text_emotions_rel.filter("text ilike '%excited to learn%'").select("""
         emotion,
         substring(
             text,
             position('excited to learn' in text),
-            position('excited to learn' in text) + len('excited to learn') - 2
+            len('excited to learn')
         ) as substring_text 
     """)
     return
 
 
 @app.cell
-def _(conn):
+def _(conn, text_emotions_rel):
     def create_text_tokens(duckdb_conn):
         conn.sql("drop table if exists text_emotion_tokens")
 
-        text_emotions_tokenized_rel = duckdb_conn.view("text_emotions_v").select("""
+        text_emotions_tokenized_rel = text_emotions_rel.select("""
             text_id,
             emotion,
             regexp_split_to_table(text, '\\W+') as token
@@ -310,9 +304,9 @@ def _(conn):
 
 
 @app.cell
-def _(conn, go):
+def _(go, text_emotions_rel):
     df_fts = (
-        conn.view("text_emotions_v")
+        text_emotions_rel
         .select("""
             text_id,
             emotion,
@@ -406,7 +400,7 @@ def _(conn, mo, process_data):
     from datetime import datetime
 
     def create_text_embeddings(duckdb_conn):
-        conn.sql("drop table if exists text_emotion_embeddings")
+        duckdb_conn.sql("drop table if exists text_emotion_embeddings")
         duckdb_conn.sql(
             "create table text_emotion_embeddings (text_id integer, text_embedding FLOAT[384])"
         )
@@ -443,23 +437,27 @@ def _(conn, mo, process_data):
                     f"done {i} from {num_batches} in {(datetime.now() - st).total_seconds()} seconds"
                 )
 
+    # this takes ~6 minutes on a 16GB MacBook
     if process_data:
         create_text_embeddings(conn)
     return
 
 
 @app.cell
-def _(conn, go):
+def _(conn, go, text_emotions_rel):
+    input_text_emb_rel = conn.sql("select get_text_embedding_list(['excited to learn'])[1] as input_text_embedding")
+
     df_vss = (
-        conn.view("text_emotions_v")
+        text_emotions_rel
         .join(conn.table("text_emotion_embeddings"), condition="text_id")
+        .join(input_text_emb_rel, condition="1=1")
         .select("""
                 text, 
                 emotion,
                 emotion_color,
                 array_cosine_distance(
                     text_embedding,
-                    get_text_embedding_list(['excited to learn'])[1]
+                    input_text_embedding
                 )::decimal(3,2) as cosine_distance_score
             """)
         .order("cosine_distance_score asc")
@@ -496,25 +494,101 @@ def _(conn, go):
     fig_vss.write_html("./__marimo__/vss.html")
 
     fig_vss
+    return (input_text_emb_rel,)
+
+
+@app.cell
+def _(conn):
+    # VSS joins
+
+    from duckdb import SQLExpression
+
+    def add_emotion_embeddings(duckdb_conn):
+        duckdb_conn.sql("alter table emotion_ref drop column if exists emotion_embedding")
+        duckdb_conn.sql("alter table emotion_ref add column emotion_embedding FLOAT[384]")
+
+        duckdb_conn.table("emotion_ref").update(set={"emotion_embedding": SQLExpression("get_text_embedding_list([emotion])[1]")})
+
+
+    add_emotion_embeddings(conn)
     return
 
 
 @app.cell
-def _(conn, go):
+def _(conn, px, text_emotions_rel):
+    best_match_text_emotion_rel = conn.sql("""
+        SELECT score,
+            left_tbl.text_id,
+            right_tbl.emotion as best_matched_emotion
+        FROM vss_join(text_emotion_embeddings, emotion_ref, text_embedding, emotion_embedding, 1, metric := 'cosine') res
+    """)
+
+    df_vss_matches = (
+        text_emotions_rel.set_alias("text_emotions_rel")
+        .join(best_match_text_emotion_rel, condition="text_id")
+        .select("text_id, emotion, best_matched_emotion")
+        .aggregate("emotion, best_matched_emotion, count(*) as number_of_records")
+        .order("emotion, best_matched_emotion")
+    ).df()
+
+    pivoted_data = df_vss_matches.pivot_table(
+        index="emotion",
+        columns="best_matched_emotion",
+        values="number_of_records",
+        sort=False,
+    )
+
+    px.imshow(
+        pivoted_data.to_numpy(),
+        x=list(pivoted_data.columns),
+        y=list(pivoted_data.index),
+        text_auto=".2f",
+        aspect="auto",
+        # title="Classified Emotion and Best Matched Emotion",
+        labels={
+            "x": "Best Matched Emotion",
+            "y": "Classfied Emotion",
+            "color": "Number of records",
+        }, color_continuous_scale="greys"
+    ).update_xaxes(side="top")
+    return
+
+
+@app.cell
+def _(conn):
+    conn.sql("""
+        select array_cosine_similarity(emotion_embedding, text_embedding) as score,
+        emotion,
+        text_id
+        from emotion_ref join text_emotion_embeddings on array_cosine_similarity(emotion_embedding, text_embedding) between 0.3 and 1
+        qualify row_number() over (partition by emotion order by score desc) = 1
+    """).order("emotion")
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""# Hybrid""")
+    return
+
+
+@app.cell
+def _(conn, go, input_text_emb_rel, text_emotions_rel):
     # hybrid search
 
     df_hybrid = (
-        conn.view("text_emotions_v")
+        text_emotions_rel
         .join(conn.table("text_emotion_embeddings"), condition="text_id")
+        .join(input_text_emb_rel, condition="1=1")
         .select("""
             text,
             emotion,
             emotion_color,
             if(emotion = 'joy' and contains(text, 'excited to learn'), 1, 0) exact_match_score,
-            1 - array_cosine_distance(
+            array_cosine_similarity(
                 text_embedding,
-                get_text_embedding_list(['excited to learn'])[1]
-            )::decimal(3,2) as cosine_distance_score,
+                input_text_embedding
+            )::decimal(3,2) as cosine_similarity_score,
             fts_main_text_emotions.match_bm25(
                     text_id,
                     'excited to learn'
@@ -522,11 +596,10 @@ def _(conn, go):
         """)
         .select("""
             *,
-            (cosine_distance_score - min(cosine_distance_score) over ()) / NULLIF((max(cosine_distance_score) over () - min(cosine_distance_score) over ()), 0) AS norm_cosine_distance_score,
             (bm25_score - min(bm25_score) over ()) / NULLIF((max(bm25_score) over () - min(bm25_score) over ()), 0) AS norm_bm25_score,
             if(exact_match_score = 1, exact_match_score,
             cast(
-                0.3 * coalesce(norm_bm25_score, 0) + 0.7 * coalesce(norm_cosine_distance_score, 0)
+                0.3 * coalesce(norm_bm25_score, 0) + 0.7 * coalesce(cosine_similarity_score, 0)
                 as
                 decimal(3, 2)
             )) as hybrid_score
