@@ -1,4 +1,4 @@
-.PHONY: setup-postgres, force-clean-pg-container, setup-env, run-dbt, serve-chart, clean-up
+.PHONY: setup-postgres force-clean-pg-container setup-env run-dbt serve-chart clean-up
 
 setup-postgres:
 	docker run --name postgres-dbt-duckdb -e POSTGRES_PASSWORD=mysecretpassword -p 5466:5432 -d postgres:17.4

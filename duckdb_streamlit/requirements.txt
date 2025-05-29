@@ -35,7 +35,7 @@ streamlit==1.43.2
 streamlit_folium==0.24.0
 tenacity==9.0.0
 toml==0.10.2
-tornado==6.4.2
+tornado==6.5
 typing_extensions==4.12.2
 tzdata==2025.2
 urllib3==2.3.0
