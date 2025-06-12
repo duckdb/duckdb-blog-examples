@@ -1,4 +1,4 @@
-.PHONY: start-app, clean-up
+.PHONY: start-app clean-up
 
 start-app:
 	python -m venv venv_duckdb_streamlit && \
