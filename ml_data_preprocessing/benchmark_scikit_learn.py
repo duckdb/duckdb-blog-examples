@@ -26,16 +26,14 @@ def scikit_encode(data_df):
             ("ordinal", OrdinalEncoder(), ["transaction_type"]),
         ],
         remainder="passthrough",
+        verbose_feature_names_out=False,
     )
 
     encoded_data = encoding_steps.fit_transform(data_df)
 
     return pd.DataFrame(
         encoded_data,
-        columns=[
-            name.replace("remainder__", "")
-            for name in encoding_steps.get_feature_names_out()
-        ],
+        columns=encoding_steps.get_feature_names_out(),
         index=data_df.index,
     )
 
@@ -47,7 +45,7 @@ def scikit_split_data(encoded_data_df):
 
 
 @timeit
-def scikit_get_transformed_training_data(x_train):
+def scikit_feature_scaling_training_data(x_train):
     impute_missing_data = Pipeline(
         [
             ("imputer", SimpleImputer(strategy="mean")),
@@ -67,44 +65,32 @@ def scikit_get_transformed_training_data(x_train):
             ("rs", RobustScaler(copy=False), ["amount"]),
         ],
         remainder="passthrough",
+        verbose_feature_names_out=False,
     )
 
+    scaling_steps.set_output(transform="pandas")
     scaling_steps.fit(x_train)
 
-    return scaling_steps, pd.DataFrame(
-        scaling_steps.transform(x_train),
-        columns=[
-            name.replace("remainder__", "")
-            for name in scaling_steps.get_feature_names_out()
-        ],
-        index=x_train.index,
-    )
+    return scaling_steps, scaling_steps.transform(x_train)
 
 
 @timeit
-def scikit_get_transformed_testing_data(scaling_steps, x_test):
-    return pd.DataFrame(
-        scaling_steps.transform(x_test),
-        columns=[
-            name.replace("remainder__", "")
-            for name in scaling_steps.get_feature_names_out()
-        ],
-        index=x_test.index,
-    )
+def scikit_feature_scaling_testing_data(scaling_steps, x_test):
+    return scaling_steps.transform(x_test)
 
 
 @timeit
 def main():
     raw_data_df = get_data_as_pd()
 
-    for i in range(1, 11):
+    for i in range(1, 2):
         print(f"Iteration {i}")
         encoded_df = scikit_encode(raw_data_df)
         x_train_df, x_test_df = scikit_split_data(encoded_df)
         scaling_steps_proc, x_train_transformed_df = (
-            scikit_get_transformed_training_data(x_train_df)
+            scikit_feature_scaling_training_data(x_train_df)
         )
-        x_test_transformed_df = scikit_get_transformed_testing_data(
+        x_test_transformed_df = scikit_feature_scaling_testing_data(
             scaling_steps_proc, x_test_df
         )
 
