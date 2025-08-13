@@ -29,6 +29,7 @@ def timeit(method):
 
 
 def get_data_as_pd():
+    print("Loading data, this may take a while")
     conn = duckdb.connect()
     return conn.read_csv(
         "https://blobs.duckdb.org/data/financial_fraud_detection_dataset.csv"

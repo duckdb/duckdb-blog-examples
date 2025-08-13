@@ -18,9 +18,9 @@ execution_log_df = (
 """)
     .filter("library in ('duckdb', 'scikit')")
     .filter(
-        "step in ('encode', 'split_data', 'get_transformed_training_data', 'get_transformed_testing_data')"
+        "step in ('encode', 'split_data', 'feature_scaling_training_data', 'feature_scaling_testing_data')"
     )
-    .filter("iteration_id <= 3")
+    .filter("iteration_id <= 1")
     .order("iteration_id, column0")
     .to_df()
 )
@@ -31,7 +31,7 @@ px.bar(
     y="execution_time",
     color="library",
     barmode="group",
-    facet_col="iteration_id",
+    # facet_col="iteration_id",
     labels={
         "iteration_id": "Iteration",
         "step": "Step",

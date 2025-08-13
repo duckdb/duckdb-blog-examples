@@ -82,6 +82,7 @@ def duckdb_encode(duckdb_conn):
         JOIN onehot_merchant_category USING (merchant_category)
         JOIN trx_type_ordinal_encoded USING (transaction_type)
     """).to_table("financial_trx_encoded")
+    return duckdb_conn.table("financial_trx_encoded").to_df()
 
 
 @timeit
@@ -108,9 +109,11 @@ def duckdb_split_data(duckdb_conn):
 
     duckdb_conn.sql("set threads=8")
 
+    return duckdb_conn.table("financial_trx_training").to_df(), duckdb_conn.table("financial_trx_testing").to_df()
+
 
 @timeit
-def duckdb_get_transformed_training_data(duckdb_conn):
+def duckdb_feature_scaling_training_data(duckdb_conn):
     return duckdb_conn.sql("""
         SELECT
             transaction_id,
@@ -146,7 +149,7 @@ def duckdb_get_transformed_training_data(duckdb_conn):
 
 
 @timeit
-def duckdb_get_transformed_testing_data(duckdb_conn):
+def duckdb_feature_scaling_testing_data(duckdb_conn):
     return duckdb_conn.sql("""
         SELECT
             transaction_id,
@@ -189,12 +192,12 @@ def main():
 
     duckdb_save_pd_as_table(conn)
 
-    for i in range(1, 11):
+    for i in range(1, 2):
         print(f"Iteration {i}")
-        duckdb_encode(conn)
-        duckdb_split_data(conn)
-        duckdb_get_transformed_training_data(conn)
-        duckdb_get_transformed_testing_data(conn)
+        encoded_df = duckdb_encode(conn)
+        x_train_df, x_test_df = duckdb_split_data(conn)
+        x_train_transformed_df = duckdb_feature_scaling_training_data(conn)
+        x_test_transformed_df = duckdb_feature_scaling_testing_data(conn)
 
 
 if __name__ == "__main__":
