@@ -91,23 +91,19 @@ def duckdb_split_data(duckdb_conn):
     duckdb_conn.sql("drop table if exists financial_trx_training")
     duckdb_conn.sql("""
         SELECT
-            * EXCLUDE ('time_since_last_transaction'),
-            coalesce(time_since_last_transaction, avg(time_since_last_transaction) over ()) as time_since_last_transaction
+            *
         FROM financial_trx_encoded
         USING SAMPLE 80 PERCENT (reservoir, 256)
     """).to_table("financial_trx_training")
 
+    duckdb_conn.sql("set threads=8")
     duckdb_conn.sql("drop table if exists financial_trx_testing")
     duckdb_conn.sql("""
         SELECT
-            src.* EXCLUDE ('time_since_last_transaction'),
-            coalesce(time_since_last_transaction, avg_time_since_last_transaction) as time_since_last_transaction
-        FROM financial_trx_encoded src,
-            scaling_params('financial_trx_training', ['time_since_last_transaction'])
+            src.*
+        FROM financial_trx_encoded src 
         WHERE NOT EXISTS (FROM financial_trx_training src_t WHERE src.transaction_id = src_t.transaction_id)
     """).to_table("financial_trx_testing")
-
-    duckdb_conn.sql("set threads=8")
 
     return duckdb_conn.table("financial_trx_training").to_df(), duckdb_conn.table("financial_trx_testing").to_df()
 
@@ -130,7 +126,7 @@ def duckdb_feature_scaling_training_data(duckdb_conn):
                 max_spending_deviation_score
             ),
             min_max_time_since_last_transaction : min_max_scaler(
-                time_since_last_transaction,
+                coalesce(time_since_last_transaction, avg_time_since_last_transaction),
                 min_time_since_last_transaction,
                 max_time_since_last_transaction
             ),
@@ -166,7 +162,7 @@ def duckdb_feature_scaling_testing_data(duckdb_conn):
                 max_spending_deviation_score
             ),
             min_max_time_since_last_transaction : min_max_scaler(
-                time_since_last_transaction,
+                coalesce(time_since_last_transaction, avg_time_since_last_transaction),
                 min_time_since_last_transaction,
                 max_time_since_last_transaction
             ),
